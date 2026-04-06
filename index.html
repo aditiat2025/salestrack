@@ -91,6 +91,8 @@
     .hitem.prospect{border-left-color:#7c3aed;}
     .hitem.travel{border-left-color:#d97706;}
     .hitem.checkin{border-left-color:#2563eb;}
+    .hitem.order{border-left-color:#0891b2;}
+    .hitem.delivery{border-left-color:#16a34a;}
 
     /* ── LOADING ── */
     #loading{display:none;position:fixed;inset:0;background:rgba(255,255,255,.87);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
@@ -227,6 +229,13 @@
       <div class="albl" id="trv-albl">Start Travel</div>
     </div>
     <div class="acard" onclick="goTo('history')"><span class="aicon">📋</span><div class="albl">Today's Log</div></div>
+  </div>
+
+  <div class="stitle">Orders</div>
+  <div class="agrid">
+    <div class="acard" onclick="goTo('order')" style="border-top:3px solid #0891b2;"><span class="aicon">📦</span><div class="albl">New Order</div></div>
+    <div class="acard" onclick="goTo('delivery')" style="border-top:3px solid #16a34a;"><span class="aicon">🚚</span><div class="albl">Confirm Delivery</div></div>
+    <div class="scard" style="grid-column:span 2;margin:0;"><div class="snum" id="s-orders">0</div><div class="slbl">Orders Today</div></div>
   </div>
 </div>
 
@@ -385,6 +394,59 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════ NEW ORDER ══════════════════════════════════════ -->
+<div id="screen-order" class="screen">
+  <div class="hdr"><button class="back" onclick="goBack()">←</button><h1>📦 New Order</h1></div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+    <div class="fgroup"><label class="flbl">Customer Name *</label><input class="finp" id="ord-customer" type="text" placeholder="e.g., Ibu Sari - Toko Maju"></div>
+    <div class="fgroup"><label class="flbl">Product Type *</label>
+      <select class="finp" id="ord-product">
+        <option value="">— Select Product —</option>
+        <option value="Cuci Piring">🍽️ Cuci Piring</option>
+        <option value="Lap Lantai">🧹 Lap Lantai</option>
+        <option value="Cuci Tangan">🧴 Cuci Tangan</option>
+        <option value="Laundry">👕 Laundry</option>
+      </select>
+    </div>
+    <div class="fgroup"><label class="flbl">Volume (Liter) *</label><input class="finp" id="ord-volume" type="number" min="0.5" step="0.5" placeholder="e.g., 5"></div>
+    <div class="fgroup"><label class="flbl">Order Source</label>
+      <select class="finp" id="ord-source">
+        <option value="WhatsApp">📱 WhatsApp</option>
+        <option value="Direct Visit">🏪 Direct Visit</option>
+        <option value="Phone Call">📞 Phone Call</option>
+        <option value="Other">📝 Other</option>
+      </select>
+    </div>
+    <div class="fgroup"><label class="flbl">Notes</label><textarea class="finp" id="ord-notes" rows="2" placeholder="e.g., Delivery requested tomorrow morning"></textarea></div>
+    <button class="btn btn-primary" style="margin-top:4px;" onclick="saveOrder()">💾 Save Order</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ CONFIRM DELIVERY ══════════════════════════════════════ -->
+<div id="screen-delivery" class="screen">
+  <div class="hdr"><button class="back" onclick="goBack()">←</button><h1>🚚 Confirm Delivery</h1></div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+    <div class="fgroup"><label class="flbl">Customer Name *</label><input class="finp" id="del-customer" type="text" placeholder="e.g., Ibu Sari - Toko Maju"></div>
+    <div class="fgroup"><label class="flbl">Product Type *</label>
+      <select class="finp" id="del-product">
+        <option value="">— Select Product —</option>
+        <option value="Cuci Piring">🍽️ Cuci Piring</option>
+        <option value="Lap Lantai">🧹 Lap Lantai</option>
+        <option value="Cuci Tangan">🧴 Cuci Tangan</option>
+        <option value="Laundry">👕 Laundry</option>
+      </select>
+    </div>
+    <div class="fgroup"><label class="flbl">Volume Delivered (Liter) *</label><input class="finp" id="del-volume" type="number" min="0.5" step="0.5" placeholder="e.g., 5"></div>
+    <div class="fgroup">
+      <label class="flbl">📍 GPS at Delivery Point * <span style="font-size:11px;color:var(--muted)">(Required)</span></label>
+      <button class="btn btn-outline" onclick="captureGPS('delivery')">📍 Capture My Location Now</button>
+      <div id="delivery-loc" class="locbox">Location not captured yet</div>
+    </div>
+    <div class="fgroup"><label class="flbl">Notes</label><textarea class="finp" id="del-notes" rows="2" placeholder="e.g., Left with owner, signed receipt"></textarea></div>
+    <button class="btn btn-primary" style="margin-top:4px;background:var(--success);" onclick="saveDelivery()">✅ Confirm Delivery</button>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════ BOTTOM NAV ══════════════════════════════════════ -->
 <nav class="bnav" id="bnav" style="display:none;">
   <button class="nbtn active" onclick="navTo('home')" id="nav-home"><span class="ni">🏠</span><span>Home</span></button>
@@ -399,12 +461,14 @@
 // ════════════════════════════════════════
 // CONSTANTS
 // ════════════════════════════════════════
-const SHEETS = { DAILY:'Daily_Logs', VISITS:'Customer_Visits', PROSPECTS:'New_Prospects', TRAVEL:'Travel_Logs' };
+const SHEETS = { DAILY:'Daily_Logs', VISITS:'Customer_Visits', PROSPECTS:'New_Prospects', TRAVEL:'Travel_Logs', ORDERS:'Orders_Log', DELIVERIES:'Deliveries_Log' };
 const HEADERS = {
   Daily_Logs:       ['Date','Salesperson','Email','Type','Time','Latitude','Longitude','Maps Link','Notes','Hours Worked'],
   Customer_Visits:  ['Date','Salesperson','Email','Customer Name','Visit Time','Duration (min)','Latitude','Longitude','Maps Link','Notes','Outcome'],
   New_Prospects:    ['Date','Salesperson','Email','Business Name','Contact Person','Phone','Visit Time','Latitude','Longitude','Maps Link','Notes','Interest Level'],
-  Travel_Logs:      ['Date','Salesperson','Email','Purpose','Start Time','Start Lat','Start Lng','Start Maps','End Time','End Lat','End Lng','End Maps','Duration (min)','GPS Route Points','Route Maps Link']
+  Travel_Logs:      ['Date','Salesperson','Email','Purpose','Start Time','Start Lat','Start Lng','Start Maps','End Time','End Lat','End Lng','End Maps','Duration (min)','GPS Route Points','Route Maps Link'],
+  Orders_Log:       ['Date','Salesperson','Email','Customer','Product Type','Volume (L)','Order Source','Order Time','Notes'],
+  Deliveries_Log:   ['Date','Salesperson','Email','Customer','Product Type','Volume (L)','Delivery Time','Latitude','Longitude','Maps Link','Notes']
 };
 
 // ════════════════════════════════════════
@@ -422,7 +486,7 @@ let st = {
   ciTime: null, ciLat: null, ciLng: null,
   travelActive: false,
   trvStart: null, trvLat: null, trvLng: null, trvPurpose: '',
-  stats: { visits:0, prospects:0, travels:0, hours:0 }
+  stats: { visits:0, prospects:0, travels:0, hours:0, orders:0 }
 };
 
 // ════════════════════════════════════════
@@ -1013,6 +1077,7 @@ function updateHomeUI() {
   document.getElementById('s-prospects').textContent=st.stats.prospects;
   document.getElementById('s-travels').textContent=st.stats.travels;
   document.getElementById('s-hours').textContent=st.stats.hours>0?st.stats.hours+'h':'0h';
+  document.getElementById('s-orders').textContent=st.stats.orders;
 }
 
 // ════════════════════════════════════════
@@ -1031,7 +1096,7 @@ function loadState() {
   if (saved) {
     const s=JSON.parse(saved);
     if (lastDate!==today) {
-      s.checkedIn=false; s.travelActive=false; s.stats={visits:0,prospects:0,travels:0,hours:0};
+      s.checkedIn=false; s.travelActive=false; s.stats={visits:0,prospects:0,travels:0,hours:0,orders:0};
       localStorage.setItem('st_date',today); localStorage.removeItem('st_route');
     }
     st={...st,...s};
@@ -1063,6 +1128,8 @@ function goTo(screen) {
   if (screen==='prospect') prepProspect();
   if (screen==='travel') prepTravel();
   if (screen==='history') prepHistory();
+  if (screen==='order') prepOrder();
+  if (screen==='delivery') prepDelivery();
   navHistory.push(screen);
   showScreen(screen);
 }
