@@ -1,5 +1,5 @@
-// SalesTrack Service Worker v2.0
-const CACHE = 'salestrack-v2';
+// SalesTrack Service Worker v3.0
+const CACHE = 'salestrack-v3';
 const ASSETS = ['./index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
