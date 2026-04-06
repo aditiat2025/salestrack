@@ -431,7 +431,7 @@ let st = {
 function init() {
   loadState();
   const cfg = getCfg();
-  if (!cfg.clientId || !cfg.sheetId) { showScreen('setup'); return; }
+  // Config always available via defaults — skip setup screen
   const savedTok = localStorage.getItem('st_token');
   const savedUsr = localStorage.getItem('st_user');
   if (savedTok && savedUsr) {
@@ -445,9 +445,20 @@ function init() {
   showScreen('login');
 }
 
+// Default config — hardcoded so no setup screen needed on new devices
+const DEFAULT_CFG = {
+  clientId: '236176077272-ilh5nb8u76vh8rm93omr471bvhm5ls10.apps.googleusercontent.com',
+  sheetId:  '1w_MEbI9EkqSytO4pp9sByVZfVHyOZb1qcbNyIYeq8AM'
+};
+
 function getCfg() {
   const s = localStorage.getItem('st_cfg');
-  return s ? JSON.parse(s) : { clientId:'', sheetId:'' };
+  const saved = s ? JSON.parse(s) : {};
+  // Use saved values if present, otherwise fall back to defaults
+  return {
+    clientId: saved.clientId || DEFAULT_CFG.clientId,
+    sheetId:  saved.sheetId  || DEFAULT_CFG.sheetId
+  };
 }
 
 function saveSetup() {
