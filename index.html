@@ -1279,9 +1279,9 @@ function coachShowForm() {
   card.innerHTML = `
     <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:#1e293b;">📋 Data Pelanggan Sekarang</div>
     <div class="fg"><label class="fl">Produk yang dipakai</label><input type="text" id="coach-cur-product" class="fi" placeholder="e.g., Sunlight, Mama Lemon"></div>
-    <div class="fg"><label class="fl">Volume per minggu (liter)</label><input type="number" id="coach-cur-vol" class="fi" step="0.5" min="0.1" placeholder="e.g., 1"></div>
-    <div class="fg"><label class="fl">Harga per liter mereka (Rp)</label><input type="number" id="coach-cur-price" class="fi" placeholder="e.g., 15000"></div>
-    <div class="fg"><label class="fl">Harga produk KAMI per liter (Rp)</label><input type="number" id="coach-our-price" class="fi" placeholder="e.g., 12000" value="12000"></div>
+    <div class="fg"><label class="fl">Volume per minggu (ml)</label><input type="number" id="coach-cur-vol" class="fi" step="50" min="10" placeholder="e.g., 1000"></div>
+    <div class="fg"><label class="fl">Harga per ml mereka (Rp)</label><input type="number" id="coach-cur-price" class="fi" placeholder="e.g., 15"></div>
+    <div class="fg"><label class="fl">Harga produk KAMI per ml (Rp)</label><input type="number" id="coach-our-price" class="fi" placeholder="e.g., 12" value="12"></div>
     <button class="btn btn-primary" style="background:#7c3aed;margin-top:4px;" onclick="coachSaveForm()">Simpan Data ✓</button>`;
   wrap.appendChild(card);
   coachSetFooter('<div style="color:var(--muted);font-size:13px;text-align:center;padding:4px;">Isi form di atas dulu ↑</div>');
@@ -1292,7 +1292,7 @@ function coachSaveForm() {
   const product = document.getElementById('coach-cur-product')?.value.trim();
   const vol = parseFloat(document.getElementById('coach-cur-vol')?.value)||0;
   const price = parseFloat(document.getElementById('coach-cur-price')?.value)||0;
-  const ourPrice = parseFloat(document.getElementById('coach-our-price')?.value)||12000;
+  const ourPrice = parseFloat(document.getElementById('coach-our-price')?.value)||12;
   if (!product || !vol || !price) { toast('⚠️ Lengkapi data pelanggan dulu'); return; }
   coachState.customerData = { product, vol, price, ourPrice };
   const weekly = (vol*price).toLocaleString('id-ID');
