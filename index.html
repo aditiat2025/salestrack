@@ -126,6 +126,21 @@
     .content{padding:14px 16px;}
     .mt8{margin-top:8px;}
     .muted{color:var(--muted);}
+
+    /* ── COACH BUBBLES ── */
+    .coach-wrap{display:flex;flex-direction:column;gap:9px;padding:12px 14px 170px;}
+    .cb{padding:11px 14px;border-radius:12px;font-size:14px;line-height:1.58;word-break:break-word;}
+    .cb-coach{background:#dbeafe;color:#1e3a5f;border-radius:12px 12px 12px 3px;align-self:flex-start;max-width:88%;}
+    .cb-script{background:#dcfce7;color:#14532d;border-radius:12px 12px 3px 12px;align-self:flex-end;max-width:88%;font-style:italic;font-weight:500;}
+    .cb-tip{background:#fef9c3;color:#713f12;border-radius:12px;align-self:center;font-size:13px;text-align:center;max-width:95%;}
+    .cb-warning{background:#fee2e2;color:#7f1d1d;border-radius:12px;align-self:center;font-size:13px;text-align:center;font-weight:600;max-width:95%;}
+    .cb-phase{background:var(--primary);color:#fff;border-radius:20px;align-self:center;font-size:12px;font-weight:700;padding:5px 16px;text-align:center;}
+    .cb-aha{background:linear-gradient(135deg,#1d4ed8,#0891b2);color:#fff;border-radius:12px;padding:14px;width:100%;}
+    .cb-obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;padding:0;}
+    .cb-obj-btn{background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 8px;font-size:12px;text-align:center;cursor:pointer;line-height:1.4;transition:background .15s;}
+    .cb-obj-btn:active{background:#f1f5f9;}
+    .coach-footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:10px 14px;padding-bottom:calc(10px + env(safe-area-inset-bottom));z-index:210;}
+    .coach-mem{background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:11px 13px;margin-bottom:12px;font-size:12px;color:#1e40af;}
   </style>
 </head>
 <body>
@@ -236,6 +251,17 @@
     <div class="acard" onclick="goTo('order')" style="border-top:3px solid #0891b2;"><span class="aicon">📦</span><div class="albl">New Order</div></div>
     <div class="acard" onclick="goTo('delivery')" style="border-top:3px solid #16a34a;"><span class="aicon">🚚</span><div class="albl">Confirm Delivery</div></div>
     <div class="scard" style="grid-column:span 2;margin:0;"><div class="snum" id="s-orders">0</div><div class="slbl">Orders Today</div></div>
+  </div>
+
+  <div class="stitle">Tools</div>
+  <div style="padding:0 16px 14px;">
+    <div class="acard" onclick="goTo('coach')" style="border:2px solid #7c3aed;display:flex;flex-direction:row;align-items:center;gap:14px;padding:16px 18px;text-align:left;">
+      <span style="font-size:36px;flex-shrink:0;">🧠</span>
+      <div>
+        <div class="albl" style="color:#7c3aed;font-size:14px;">Sales Coach Mode</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Panduan step-by-step kunjungan warung</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -447,6 +473,43 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════ SALES COACH ══════════════════════════════════════ -->
+<div id="screen-coach" class="screen">
+  <div class="hdr">
+    <button class="back" onclick="goBack()">←</button>
+    <h1>🧠 Sales Coach</h1>
+    <div id="coach-phase-badge" style="margin-left:auto;font-size:11px;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:10px;"></div>
+  </div>
+  <div id="coach-setup" style="padding:16px;">
+    <div class="card" style="text-align:center;margin:0 0 16px;">
+      <div style="font-size:40px;margin-bottom:8px;">🧠</div>
+      <div style="font-weight:700;font-size:16px;">Sales Coach Mode</div>
+      <div style="color:var(--muted);font-size:12px;margin-top:4px;">Panduan step-by-step kunjungi warung / warkop</div>
+    </div>
+    <div class="fg">
+      <label class="fl">Nama Toko / Warung *</label>
+      <input type="text" id="coach-cname" class="fi" oninput="checkCoachMemory()" placeholder="e.g., Warung Bu Sari, Warkop Pak Joko" autocomplete="off">
+    </div>
+    <div id="coach-prev-note" style="display:none;" class="coach-mem"></div>
+    <div class="fg">
+      <label class="fl">Ini kunjungan ke berapa?</label>
+      <select id="coach-vnum" class="fs">
+        <option value="1">1 — Pertama kali (belum kenal)</option>
+        <option value="2">2 — Kedua (sudah kenalan)</option>
+        <option value="3">3 — Ketiga (sudah ada rapport)</option>
+        <option value="4">4+ — Pelanggan lama</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="background:#7c3aed;" onclick="startCoach()">🧠 Mulai Sesi Coach</button>
+  </div>
+  <div id="coach-chat" style="display:none;">
+    <div id="coach-messages" class="coach-wrap"></div>
+    <div class="coach-footer" id="coach-footer">
+      <button class="btn btn-primary" style="background:#7c3aed;" onclick="coachNextStep()">Lanjut ✓</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════ BOTTOM NAV ══════════════════════════════════════ -->
 <nav class="bnav" id="bnav" style="display:none;">
   <button class="nbtn active" onclick="navTo('home')" id="nav-home"><span class="ni">🏠</span><span>Home</span></button>
@@ -461,14 +524,15 @@
 // ════════════════════════════════════════
 // CONSTANTS
 // ════════════════════════════════════════
-const SHEETS = { DAILY:'Daily_Logs', VISITS:'Customer_Visits', PROSPECTS:'New_Prospects', TRAVEL:'Travel_Logs', ORDERS:'Orders_Log', DELIVERIES:'Deliveries_Log' };
+const SHEETS = { DAILY:'Daily_Logs', VISITS:'Customer_Visits', PROSPECTS:'New_Prospects', TRAVEL:'Travel_Logs', ORDERS:'Orders_Log', DELIVERIES:'Deliveries_Log', OBJECTIONS:'Objections_Log' };
 const HEADERS = {
   Daily_Logs:       ['Date','Salesperson','Email','Type','Time','Latitude','Longitude','Maps Link','Notes','Hours Worked'],
   Customer_Visits:  ['Date','Salesperson','Email','Customer Name','Visit Time','Duration (min)','Latitude','Longitude','Maps Link','Notes','Outcome'],
   New_Prospects:    ['Date','Salesperson','Email','Business Name','Contact Person','Phone','Visit Time','Latitude','Longitude','Maps Link','Notes','Interest Level'],
   Travel_Logs:      ['Date','Salesperson','Email','Purpose','Start Time','Start Lat','Start Lng','Start Maps','End Time','End Lat','End Lng','End Maps','Duration (min)','GPS Route Points','Route Maps Link'],
   Orders_Log:       ['Date','Salesperson','Email','Customer','Product Type','Volume (L)','Order Source','Order Time','Notes'],
-  Deliveries_Log:   ['Date','Salesperson','Email','Customer','Product Type','Volume (L)','Delivery Time','Latitude','Longitude','Maps Link','Notes']
+  Deliveries_Log:   ['Date','Salesperson','Email','Customer','Product Type','Volume (L)','Delivery Time','Latitude','Longitude','Maps Link','Notes'],
+  Objections_Log:   ['Date','Salesperson','Email','Customer','Visit #','Unanswered Objection','Context']
 };
 
 // ════════════════════════════════════════
@@ -884,6 +948,505 @@ async function saveDelivery() {
   } catch(e) { loading(false); toast('❌ Error: '+e.message); }
 }
 
+// ════════════════════════════════════════
+// SALES COACH — DATA
+// ════════════════════════════════════════
+const COACH_SCRIPTS = {
+  1: [
+    {
+      phase:'① Masuk & Salam',
+      msgs:[
+        {t:'coach',m:'Tarik nafas. Senyum sebelum masuk. Berdiri tegak — kepercayaan diri kamu yang pertama mereka lihat.'},
+        {t:'script',m:'"Permisi Bu/Pak, boleh minta waktunya 2 menit saja?"'},
+        {t:'tip',m:'💡 Kalau sedang sibuk: "Saya tunggu ya Bu" — jangan langsung pergi.'},
+      ],
+      btnLabel:'Sudah masuk ✓'
+    },
+    {
+      phase:'② Cair Dulu',
+      msgs:[
+        {t:'coach',m:'Puji sesuatu yang nyata di warungnya. Satu pujian = satu menit kepercayaan.'},
+        {t:'script',m:'"Wah warungnya rame ya Bu. Produknya lengkap juga."'},
+        {t:'script',m:'"Udah lama buka di sini?"'},
+        {t:'tip',m:'💡 Dengerin jawabannya. Kalau mulai cerita = mereka sudah terbuka.'},
+      ],
+      btnLabel:'Sudah ngobrol ✓'
+    },
+    {
+      phase:'③ Perkenalan Singkat',
+      msgs:[
+        {t:'coach',m:'Maks 2 kalimat. Jangan pidato. Sebut nama kamu + apa yang kamu jual.'},
+        {t:'script',m:'"Saya [nama kamu], jualan sabun cuci untuk dapur dan rumah tangga. Fokus ke warung dan warkop."'},
+        {t:'tip',m:'💡 Kalau mereka nanya balik "sabun apa?" = sinyal bagus! Mereka penasaran.'},
+      ],
+      btnLabel:'Sudah perkenalan ✓'
+    },
+    {
+      phase:'④ Gali Kebiasaan',
+      msgs:[
+        {t:'coach',m:'Tanya produk yang mereka pakai sekarang. DENGERIN dulu, catat, jangan potong.'},
+        {t:'script',m:'"Bu, sekarang pakai sabun apa untuk cuci piring?"'},
+        {t:'script',m:'"Seminggu kira-kira habis berapa Bu? Harganya berapa per botol?"'},
+        {t:'tip',m:'💡 Catat data ini. Kita pakai untuk hitung penghematan.'},
+      ],
+      btnLabel:'Catat Data →',
+      action:'form'
+    },
+    {
+      phase:'⑤ Momen AHA',
+      msgs:[
+        {t:'coach',m:'Hitung penghematan bareng mereka. Angka > kata-kata.'},
+        {t:'tip',m:'💡 Tanya izin dulu: "Boleh saya hitung sebentar Bu?" — bukan langsung klaim.'},
+        {t:'warning',m:'⚠️ Kalau mereka diam setelah lihat angka = BAGUS. Biarkan. Jangan ngomong duluan!'},
+      ],
+      btnLabel:'Hitung Penghematan →',
+      action:'aha'
+    },
+    {
+      phase:'⑥ Demo & Keberatan',
+      msgs:[
+        {t:'coach',m:'Kasih contoh fisik. Demo > penjelasan. Kalau ada wastafel, tawarkan demo langsung.'},
+        {t:'script',m:'"Boleh saya kasih contoh kecil Bu? Coba dulu gratis, lihat sendiri bedanya."'},
+        {t:'tip',m:'💡 Ada keberatan? Pilih dari daftar di bawah untuk panduan menjawab.'},
+      ],
+      btnLabel:'Lanjut →',
+      action:'objections'
+    },
+    {
+      phase:'⑦ Tutup / Tanam Benih',
+      msgs:[
+        {t:'coach',m:'Baca situasi: closing atau tanam benih. Jangan paksa.'},
+        {t:'script',m:'KALAU MINAT → "Mau coba berapa liter dulu Bu? Saya bisa antar besok."'},
+        {t:'script',m:'KALAU RAGU → "Gak harus sekarang Bu. Saya tinggalin nomor. Mau coba, WA aja langsung."'},
+        {t:'warning',m:'⚠️ Sinyal RAGU (Jawa/Sunda): "iya nanti ya", "lumayan", "wah menarik" lalu ganti topik. JANGAN push. Tap tombol Keberatan ↓'},
+      ],
+      btnLabel:'Selesai ✓',
+      action:'close'
+    },
+  ],
+  2: [
+    {
+      phase:'① Sambung Rapport',
+      msgs:[
+        {t:'coach',m:'Ingat detail kunjungan pertama. Sambung dari sana. Ini yang membedakan kamu dari sales lain.'},
+        {t:'script',m:'"Selamat siang Bu! Gimana kabar warangnya, masih rame?"'},
+        {t:'script',m:'"Waktu kemarin saya ke sini, Bu bilang sabunnya kurang kental ya. Saya bawa contoh baru nih."'},
+        {t:'tip',m:'💡 Menyebut detail kunjungan pertama = kamu paling perhatian dari semua sales yang pernah datang.'},
+      ],
+      btnLabel:'Sudah sambung ✓'
+    },
+    {
+      phase:'② Demo Langsung',
+      msgs:[
+        {t:'coach',m:'Mereka sudah dengar sebelumnya. Sekarang kasih pengalaman langsung.'},
+        {t:'script',m:'"Kemarin saya janji bawa contoh. Ini dia. Boleh coba sekarang?"'},
+        {t:'tip',m:'💡 Kalau mereka mau coba = setengah jalan. Biarkan mereka rasakan sendiri, jangan komentar.'},
+      ],
+      btnLabel:'Demo selesai ✓',
+      action:'objections'
+    },
+    {
+      phase:'③ Tawaran Trial',
+      msgs:[
+        {t:'coach',m:'Tawarkan trial kecil. Bukan "beli", tapi "coba dulu".'},
+        {t:'script',m:'"Gimana kalau coba 2 liter dulu Bu? Kalau cocok, lanjut. Kalau ga, ya udah gak apa-apa."'},
+        {t:'tip',m:'💡 Kalimat "gak apa-apa" mengurangi tekanan. Mereka lebih gampang bilang iya.'},
+        {t:'warning',m:'⚠️ Kalau masih "iya nanti ya" = tanam benih, pamit hangat. Kunjungan 3 posisi kamu lebih kuat.'},
+      ],
+      btnLabel:'Selesai ✓',
+      action:'close'
+    },
+  ],
+  3: [
+    {
+      phase:'① Masuk Seperti Teman',
+      msgs:[
+        {t:'coach',m:'Kunjungan 3: kamu bukan sales lagi — kamu teman yang juga bisa bantu bisnis mereka.'},
+        {t:'script',m:'"Selamat pagi Bu! Saya lewat sini, mampir bentar. Warungnya makin kece nih."'},
+        {t:'tip',m:'💡 Ngobrol natural 2-3 menit dulu sebelum masuk ke produk. Jangan bawa katalog di tangan.'},
+      ],
+      btnLabel:'Rapport terbangun ✓'
+    },
+    {
+      phase:'② Cek Perkembangan',
+      msgs:[
+        {t:'coach',m:'Tanya gimana hasil trial (kalau ada) atau gimana kebutuhan mereka berkembang.'},
+        {t:'script',m:'"Gimana Bu, produk yang saya kasih contoh kemarin? Sempat dicoba?"'},
+        {t:'tip',m:'💡 Kalau belum dicoba = tidak apa. Tanya kenapa — mungkin ada hambatan yang bisa kamu bantu selesaikan.'},
+      ],
+      btnLabel:'Sudah tanya ✓',
+      action:'objections'
+    },
+    {
+      phase:'③ Tanya Langsung dengan Hormat',
+      msgs:[
+        {t:'coach',m:'Di kunjungan 3, kamu berhak tanya langsung. Dengan sopan. Mereka akan respect.'},
+        {t:'script',m:'"Bu, saya sudah 3 kali ke sini. Saya jujur aja — apakah ada yang masih menghalangi untuk coba produk kami?"'},
+        {t:'tip',m:'💡 Kejujuran menghormati waktu mereka DAN waktu kamu.'},
+        {t:'warning',m:'⚠️ Kalau masih penolakan halus: terima dengan lapang, pamit hangat, simpan catatan — approach lagi 1 bulan kemudian.'},
+      ],
+      btnLabel:'Selesai ✓',
+      action:'close'
+    },
+  ],
+  4: [
+    {
+      phase:'① Servis Visit',
+      msgs:[
+        {t:'coach',m:'Kamu sudah dikenal. Ini kunjungan servis, bukan jualan. Datang untuk bantu, bukan untuk ambil order saja.'},
+        {t:'script',m:'"Halo Bu! Mampir ngecek stok. Masih ada atau sudah mau habis?"'},
+        {t:'tip',m:'💡 Tanya kebutuhan restock SEBELUM mereka kehabisan. Kamu jadi andalan mereka.'},
+      ],
+      btnLabel:'Sudah cek ✓'
+    },
+    {
+      phase:'② Upsell Santai',
+      msgs:[
+        {t:'coach',m:'Kalau ada produk lain yang belum mereka coba, sebutkan santai — bukan jualan, tapi saran teman.'},
+        {t:'script',m:'"O ya Bu, kami juga ada [produk lain]. Ibu biasanya pakai apa untuk [kebutuhan]?"'},
+        {t:'tip',m:'💡 Upsell yang baik terasa seperti saran dari teman, bukan tekanan dari sales.'},
+      ],
+      btnLabel:'Sudah upsell ✓'
+    },
+    {
+      phase:'③ Catat Order & Pamit',
+      msgs:[
+        {t:'coach',m:'Catat order dengan jelas. Konfirmasi waktu pengiriman. Pamit dengan hangat.'},
+        {t:'script',m:'"Oke Bu, saya catat ya. [volume] liter [produk]. Besok saya antar jam [waktu] ya."'},
+        {t:'script',m:'"Terima kasih Bu! Sehat-sehat. Sampai jumpa!"'},
+      ],
+      btnLabel:'Selesai ✓',
+      action:'close'
+    },
+  ]
+};
+
+const OBJECTION_LIST = [
+  {
+    label:'😕 Ga sekental Sunlight',
+    coach:'Kental = persepsi, bukan efektivitas. Redirect ke hasil cuci, bukan wujud cairan.',
+    script:'"Iya Bu, saya ngerti. Kental itu memang kebiasaan. Tapi boleh saya tunjukkin? [demo] Bersihnya sama, tapi ini lebih irit karena dosisnya lebih kecil."',
+    tip:'💡 Jangan debat. Demo > argumen. Tunjukkan langsung di piring/tangan.'
+  },
+  {
+    label:'🫧 Busanya kurang banyak',
+    coach:'Busa = bahan SLS yang keras ke kulit. Pelanggan tidak tahu ini. Gunakan analogi + demo tangan.',
+    script:'"Busa banyak itu dari bahan yang agak keras di tangan Bu. Produk kami formulanya lembut tapi tetap bersih. Coba gosok di punggung tangan dulu — rasanya beda."',
+    tip:'💡 Minta mereka gosok di punggung tangan. Sensasi lembut langsung terasa vs Sunlight.'
+  },
+  {
+    label:'🔒 Udah enak sama yang lama',
+    coach:'Jangan minta mereka ganti total. Tawarkan coba paralel — tidak ada risiko.',
+    script:'"Bagus Bu kalau sudah puas. Saya gak minta ganti total. Coba paralel aja dulu — yang biasa tetap, produk kami untuk yang baru. Lihat sendiri selisih penghematannya."',
+    tip:'💡 Paralel = tidak ada risiko bagi mereka. Jauh lebih mudah bilang iya.'
+  },
+  {
+    label:'💰 Harganya sama aja',
+    coach:'Bandingkan nilai, bukan harga. Volume lebih banyak = hemat per cucian.',
+    script:'"Memang sama Bu harganya. Tapi volume kami lebih banyak. Artinya per cucian lebih irit. Harga sama, jumlah cucian lebih banyak."',
+    tip:'💡 Hitung langsung di kalkulator HP. Angka > klaim lisan.'
+  },
+  {
+    label:'⏰ Nanti ya / Lagi sibuk',
+    coach:'Hormati waktu mereka. Jangan paksa. Jadwalkan kapan kembali.',
+    script:'"Oke Bu, saya ngerti. Boleh saya balik [sebutkan hari/jam]? Atau lebih enak WA dulu?"',
+    tip:'💡 Pamit dengan hangat. Mereka ingat sales yang tidak maksa — itu nilai besar.'
+  },
+  {
+    label:'🌿 "Iya nanti ya…" (Jawa/Sunda)',
+    coach:'⚠️ INI SINYAL HALUS! "Iya nanti ya", "lumayan", "wah menarik" sambil ganti topik = penolakan sopan. MUNDUR CANTIK sekarang. Kalau kamu push lagi, mereka polite tapi tidak akan pernah beli.',
+    script:'"Iya Bu, gak harus sekarang. Saya tinggalin nomor aja ya. Kalau mau coba atau tanya-tanya, langsung WA saya aja."',
+    tip:'💡 Senyum, berdiri, pamit hangat. Ini kunjungan SUKSES — mereka ingat kamu. Kunjungan berikutnya lebih mudah masuk.',
+    isCultural:true
+  },
+  {
+    label:'❓ Ga bisa jawab? Catat ↓',
+    special:'unanswered'
+  }
+];
+
+// ════════════════════════════════════════
+// SALES COACH — STATE & FUNCTIONS
+// ════════════════════════════════════════
+let coachState = {
+  customerName:'', visitNum:1, currentStep:0,
+  phases:[], customerData:{}, ahaData:{}
+};
+
+function prepCoach() {
+  document.getElementById('coach-setup').style.display = 'block';
+  document.getElementById('coach-chat').style.display = 'none';
+  document.getElementById('coach-phase-badge').textContent = '';
+  document.getElementById('coach-cname').value = '';
+  document.getElementById('coach-vnum').value = '1';
+  document.getElementById('coach-prev-note').style.display = 'none';
+}
+
+function checkCoachMemory() {
+  const name = document.getElementById('coach-cname').value.trim();
+  const noteEl = document.getElementById('coach-prev-note');
+  if (!name) { noteEl.style.display='none'; return; }
+  const key = 'coach_mem_' + name.toLowerCase().replace(/\W+/g,'_');
+  const mem = JSON.parse(localStorage.getItem(key)||'null');
+  if (mem) {
+    noteEl.style.display = 'block';
+    noteEl.innerHTML = `<strong>📝 Catatan kunjungan ke-${mem.visitNum} (${mem.date}):</strong><br>${mem.notes||'Tidak ada catatan.'}<br><span style="color:#2563eb;font-size:11px;">→ Otomatis set ke Kunjungan ke-${Math.min(mem.visitNum+1,4)}</span>`;
+    document.getElementById('coach-vnum').value = String(Math.min(mem.visitNum+1,4));
+  } else {
+    noteEl.style.display = 'none';
+  }
+}
+
+function startCoach() {
+  const name = document.getElementById('coach-cname').value.trim();
+  if (!name) { toast('⚠️ Masukkan nama toko/warung dulu'); return; }
+  const vnum = parseInt(document.getElementById('coach-vnum').value)||1;
+  const scriptKey = vnum >= 4 ? 4 : vnum;
+  coachState = {
+    customerName: name, visitNum: vnum, currentStep: 0,
+    phases: COACH_SCRIPTS[scriptKey] || COACH_SCRIPTS[4],
+    customerData: {}, ahaData: {}
+  };
+  document.getElementById('coach-setup').style.display = 'none';
+  document.getElementById('coach-chat').style.display = 'block';
+  const msgEl = document.getElementById('coach-messages');
+  msgEl.innerHTML = '';
+
+  const visitLabel = ['','Pertama','Kedua','Ketiga','Keempat'][Math.min(vnum,4)]||'Lanjutan';
+  coachBubble('coach', `🧠 Sesi untuk: <strong>${name}</strong><br>Kunjungan ke-<strong>${visitLabel}</strong>. Ikuti panduan step by step.`);
+  coachBubble('tip', '💡 Panduan ini hanya untuk kamu. Pelanggan tidak melihat layar ini.');
+  coachShowStep();
+}
+
+function coachBubble(type, html, container) {
+  const wrap = container || document.getElementById('coach-messages');
+  const div = document.createElement('div');
+  div.className = `cb cb-${type}`;
+  div.innerHTML = html;
+  wrap.appendChild(div);
+  return div;
+}
+
+function coachScrollBottom() {
+  setTimeout(()=>{
+    const m = document.getElementById('coach-messages');
+    if (m) m.lastElementChild?.scrollIntoView({behavior:'smooth',block:'end'});
+  }, 80);
+}
+
+function coachSetFooter(html) {
+  document.getElementById('coach-footer').innerHTML = html;
+}
+
+function coachShowStep() {
+  const step = coachState.phases[coachState.currentStep];
+  if (!step) { coachEnd(); return; }
+
+  document.getElementById('coach-phase-badge').textContent =
+    `${coachState.currentStep+1}/${coachState.phases.length}`;
+
+  coachBubble('phase', step.phase);
+  step.msgs.forEach(m => coachBubble(m.t, m.m));
+
+  const purple = 'background:#7c3aed;';
+  if (step.action === 'form') {
+    coachSetFooter(`<button class="btn btn-primary" style="${purple}" onclick="coachShowForm()">📋 Catat Data Pelanggan</button>`);
+  } else if (step.action === 'aha') {
+    if (!coachState.customerData.product) {
+      coachSetFooter(`<div style="display:flex;gap:8px;"><button class="btn btn-outline" style="flex:1;color:#7c3aed;border-color:#7c3aed;" onclick="coachShowForm()">📋 Isi Data Dulu</button><button class="btn btn-primary" style="flex:1;${purple}" onclick="coachShowAHA()">🧮 Hitung →</button></div>`);
+    } else {
+      coachSetFooter(`<button class="btn btn-primary" style="${purple}" onclick="coachShowAHA()">🧮 Hitung Penghematan</button>`);
+    }
+  } else if (step.action === 'objections') {
+    coachSetFooter(`<div style="display:flex;gap:8px;"><button class="btn btn-outline" style="flex:1;color:#7c3aed;border-color:#7c3aed;" onclick="coachShowObjections()">⚡ Keberatan?</button><button class="btn btn-primary" style="flex:1;${purple}" onclick="coachNextStep()">Lanjut ✓</button></div>`);
+  } else if (step.action === 'close') {
+    coachSetFooter(`<div style="display:flex;gap:8px;"><button class="btn btn-outline" style="flex:1;color:#7c3aed;border-color:#7c3aed;" onclick="coachShowObjections()">⚡ Keberatan?</button><button class="btn btn-success" style="flex:1;" onclick="coachClose()">✅ Selesai</button></div>`);
+  } else {
+    coachSetFooter(`<button class="btn btn-primary" style="${purple}" onclick="coachNextStep()">${step.btnLabel||'Lanjut ✓'}</button>`);
+  }
+  coachScrollBottom();
+}
+
+function coachNextStep() {
+  coachState.currentStep++;
+  coachShowStep();
+}
+
+function coachShowForm() {
+  const wrap = document.getElementById('coach-messages');
+  const card = document.createElement('div');
+  card.style.cssText = 'background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;width:100%;';
+  card.innerHTML = `
+    <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:#1e293b;">📋 Data Pelanggan Sekarang</div>
+    <div class="fg"><label class="fl">Produk yang dipakai</label><input type="text" id="coach-cur-product" class="fi" placeholder="e.g., Sunlight, Mama Lemon"></div>
+    <div class="fg"><label class="fl">Volume per minggu (liter)</label><input type="number" id="coach-cur-vol" class="fi" step="0.5" min="0.1" placeholder="e.g., 1"></div>
+    <div class="fg"><label class="fl">Harga per liter mereka (Rp)</label><input type="number" id="coach-cur-price" class="fi" placeholder="e.g., 15000"></div>
+    <div class="fg"><label class="fl">Harga produk KAMI per liter (Rp)</label><input type="number" id="coach-our-price" class="fi" placeholder="e.g., 12000" value="12000"></div>
+    <button class="btn btn-primary" style="background:#7c3aed;margin-top:4px;" onclick="coachSaveForm()">Simpan Data ✓</button>`;
+  wrap.appendChild(card);
+  coachSetFooter('<div style="color:var(--muted);font-size:13px;text-align:center;padding:4px;">Isi form di atas dulu ↑</div>');
+  coachScrollBottom();
+}
+
+function coachSaveForm() {
+  const product = document.getElementById('coach-cur-product')?.value.trim();
+  const vol = parseFloat(document.getElementById('coach-cur-vol')?.value)||0;
+  const price = parseFloat(document.getElementById('coach-cur-price')?.value)||0;
+  const ourPrice = parseFloat(document.getElementById('coach-our-price')?.value)||12000;
+  if (!product || !vol || !price) { toast('⚠️ Lengkapi data pelanggan dulu'); return; }
+  coachState.customerData = { product, vol, price, ourPrice };
+  const weekly = (vol*price).toLocaleString('id-ID');
+  const monthly = (vol*price*4).toLocaleString('id-ID');
+  coachBubble('tip', `✅ Data tersimpan.<br>Pengeluaran sabun Bu: <strong>Rp ${weekly}/minggu = Rp ${monthly}/bulan</strong>`);
+  coachNextStep();
+}
+
+function coachShowAHA() {
+  const d = coachState.customerData;
+  if (!d.product) { coachShowForm(); return; }
+  const theirW = d.vol * d.price;
+  const ourW = d.vol * d.ourPrice;
+  const savingW = theirW - ourW;
+  const savingM = savingW * 4;
+  const savingY = savingW * 52;
+  const savingPct = Math.round((savingW/theirW)*100);
+
+  const wrap = document.getElementById('coach-messages');
+  const ahaDiv = document.createElement('div');
+  ahaDiv.className = 'cb cb-aha';
+  ahaDiv.innerHTML = `
+    <div style="font-weight:700;font-size:14px;margin-bottom:10px;">🧮 Kalkulator AHA</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div style="background:rgba(255,255,255,.15);padding:8px;border-radius:8px;text-align:center;">
+        <div style="font-size:11px;opacity:.8;">${d.product}</div>
+        <div style="font-size:17px;font-weight:700;">Rp ${theirW.toLocaleString('id-ID')}</div>
+        <div style="font-size:10px;opacity:.7;">/minggu</div>
+      </div>
+      <div style="background:rgba(255,255,255,.25);padding:8px;border-radius:8px;text-align:center;">
+        <div style="font-size:11px;opacity:.8;">Produk Kami</div>
+        <div style="font-size:17px;font-weight:700;">Rp ${ourW.toLocaleString('id-ID')}</div>
+        <div style="font-size:10px;opacity:.7;">/minggu</div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,.2);padding:10px;border-radius:8px;text-align:center;">
+      <div style="font-size:12px;opacity:.85;">Hemat per bulan</div>
+      <div style="font-size:24px;font-weight:700;">Rp ${savingM.toLocaleString('id-ID')}</div>
+      <div style="font-size:11px;opacity:.75;">Setahun: Rp ${savingY.toLocaleString('id-ID')} · Hemat ${savingPct>0?savingPct:0}%</div>
+    </div>`;
+  wrap.appendChild(ahaDiv);
+  coachState.ahaData = { theirW, ourW, savingM, savingY };
+
+  const scriptText = savingM > 0
+    ? `"Jadi Bu, dengan volume yang sama, pakai produk kami hemat <strong>Rp ${savingM.toLocaleString('id-ID')} sebulan</strong>. Setahun Rp ${savingY.toLocaleString('id-ID')}. Itu bisa untuk beli bahan lain atau kasih jajan anak."`
+    : `"Harga kita sebanding Bu. Bedanya produk kami lebih lembut di tangan dan formulanya lebih stabil untuk dapur."`;
+  coachBubble('script', scriptText);
+  coachBubble('warning', '⚠️ Setelah bicara: DIAM. Biarkan angka bicara. Jangan tambah-tambahin penjelasan.');
+
+  coachSetFooter(`<div style="display:flex;gap:8px;"><button class="btn btn-outline" style="flex:1;color:#7c3aed;border-color:#7c3aed;" onclick="coachShowObjections()">⚡ Keberatan?</button><button class="btn btn-primary" style="flex:1;background:#7c3aed;" onclick="coachNextStep()">Lanjut ✓</button></div>`);
+  coachScrollBottom();
+}
+
+function coachShowObjections() {
+  coachBubble('phase', '⚡ Panduan Keberatan');
+  const wrap = document.getElementById('coach-messages');
+  const grid = document.createElement('div');
+  grid.className = 'cb-obj-grid';
+  grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;padding:4px 0;';
+  OBJECTION_LIST.forEach((obj, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'cb-obj-btn';
+    btn.textContent = obj.label;
+    if (obj.special === 'unanswered') {
+      btn.style.cssText = 'background:#fff7ed;border-color:#fca5a5;grid-column:span 2;';
+    } else if (obj.isCultural) {
+      btn.style.cssText = 'background:#fffbeb;border-color:#f59e0b;grid-column:span 2;font-weight:600;';
+    }
+    btn.onclick = () => coachHandleObjection(i);
+    grid.appendChild(btn);
+  });
+  wrap.appendChild(grid);
+
+  const cur = coachState.phases[coachState.currentStep];
+  if (cur && cur.action === 'close') {
+    coachSetFooter(`<div style="display:flex;gap:8px;"><button class="btn btn-outline" style="flex:1;color:#7c3aed;border-color:#7c3aed;" onclick="coachShowObjections()">⚡ Keberatan?</button><button class="btn btn-success" style="flex:1;" onclick="coachClose()">✅ Selesai</button></div>`);
+  } else {
+    coachSetFooter(`<button class="btn btn-primary" style="background:#7c3aed;" onclick="coachNextStep()">Lanjut ke langkah berikutnya ✓</button>`);
+  }
+  coachScrollBottom();
+}
+
+function coachHandleObjection(idx) {
+  const obj = OBJECTION_LIST[idx];
+  if (!obj) return;
+  if (obj.special === 'unanswered') { coachShowUnanswered(); return; }
+  if (obj.isCultural) {
+    coachBubble('warning', `🌿 SINYAL HALUS TERDETEKSI<br><br>${obj.coach}`);
+    coachBubble('script', obj.script);
+    coachBubble('tip', obj.tip);
+    coachBubble('coach', '🤝 Pamit dengan hangat sekarang. Kunjungan ini <strong>SUKSES</strong> meski belum ada order. Kamu membangun kepercayaan jangka panjang.');
+  } else {
+    coachBubble('coach', `<strong>${obj.label}</strong><br><br>${obj.coach}`);
+    coachBubble('script', obj.script);
+    if (obj.tip) coachBubble('tip', obj.tip);
+  }
+  coachScrollBottom();
+}
+
+function coachShowUnanswered() {
+  coachBubble('coach', '❓ Catat pertanyaan / keberatan yang belum bisa kamu jawab. Manager akan cari jawabannya.');
+  const wrap = document.getElementById('coach-messages');
+  const card = document.createElement('div');
+  card.style.cssText = 'background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:14px;width:100%;';
+  card.innerHTML = `
+    <div style="font-weight:600;font-size:13px;margin-bottom:8px;color:#9a3412;">❓ Keberatan yang Belum Terjawab</div>
+    <textarea id="coach-unanswered" class="fta" placeholder="e.g., Pelanggan tanya soal bahan kimia yang dipakai, saya belum tahu jawabannya..." rows="3"></textarea>
+    <button class="btn btn-warning" style="margin-top:8px;" onclick="coachSaveUnanswered()">💾 Kirim ke Manager</button>`;
+  wrap.appendChild(card);
+  coachScrollBottom();
+}
+
+async function coachSaveUnanswered() {
+  const text = document.getElementById('coach-unanswered')?.value.trim();
+  if (!text) { toast('⚠️ Tulis dulu keberatannya'); return; }
+  const now = new Date();
+  const row = [
+    now.toLocaleDateString('id-ID'), currentUser?.name||'', currentUser?.email||'',
+    coachState.customerName, coachState.visitNum, text,
+    `Visit ${coachState.visitNum} — ${now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}`
+  ];
+  loading(true);
+  try {
+    await appendRow(SHEETS.OBJECTIONS, row);
+    loading(false);
+    coachBubble('tip', '✅ Terkirim ke manager. Semua sales pernah tidak bisa jawab. Yang penting dicatat!');
+    document.getElementById('coach-unanswered').value = '';
+    toast('✅ Keberatan tersimpan di sheet');
+  } catch(e) { loading(false); toast('❌ Error: '+e.message); }
+}
+
+function coachClose() {
+  coachBubble('phase', '🏁 Kunjungan Selesai');
+  coachBubble('coach', `Mantap! Kunjungan ke <strong>${coachState.customerName}</strong> selesai.<br><br>Tulis catatan penting sebelum tutup sesi (opsional).`);
+  coachSetFooter(`
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <textarea id="coach-session-notes" class="fta" style="min-height:56px;" placeholder="e.g., Tertarik, minta dikirimin contoh besok. Keberatan: busa kurang..."></textarea>
+      <button class="btn btn-success" onclick="coachFinish()">✅ Simpan & Tutup Sesi</button>
+    </div>`);
+  coachScrollBottom();
+}
+
+function coachEnd() { coachClose(); }
+
+function coachFinish() {
+  const notes = document.getElementById('coach-session-notes')?.value.trim()||'';
+  const key = 'coach_mem_' + coachState.customerName.toLowerCase().replace(/\W+/g,'_');
+  localStorage.setItem(key, JSON.stringify({
+    visitNum: coachState.visitNum, date: new Date().toLocaleDateString('id-ID'), notes
+  }));
+  toast('✅ Sesi tersimpan untuk '+coachState.customerName);
+  goBack();
+}
+
 // TRAVEL
 // ════════════════════════════════════════
 function prepTravel() {
@@ -1127,6 +1690,7 @@ function goTo(screen) {
   if (screen==='checkin') prepCheckin();
   if (screen==='visit') prepVisit();
   if (screen==='prospect') prepProspect();
+  if (screen==='coach') prepCoach();
   if (screen==='travel') prepTravel();
   if (screen==='history') prepHistory();
   if (screen==='order') prepOrder();
