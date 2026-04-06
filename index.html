@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SalesTrack">
+  <meta name="theme-color" content="#1d4ed8">
+  <title>SalesTrack</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+      --primary:#1d4ed8; --primary-light:#3b82f6;
+      --success:#16a34a; --warning:#d97706; --danger:#dc2626;
+      --bg:#f1f5f9; --card:#ffffff; --text:#1e293b;
+      --muted:#64748b; --border:#e2e8f0;
+    }
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+    /* ── SCREENS ── */
+    .screen{display:none;min-height:100vh;padding-bottom:80px;}
+    .screen.active{display:block;}
+    #screen-setup.active,#screen-login.active{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+    /* ── HEADER ── */
+    .hdr{background:var(--primary);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
+    .hdr h1{font-size:17px;font-weight:600;}
+    .back{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:2px 6px;}
+
+    /* ── BOTTOM NAV ── */
+    .bnav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;border-top:1px solid var(--border);z-index:200;padding-bottom:env(safe-area-inset-bottom);}
+    .nbtn{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;gap:2px;}
+    .nbtn.active{color:var(--primary);}
+    .nbtn .ni{font-size:20px;}
+
+    /* ── CARDS ── */
+    .card{background:#fff;border-radius:12px;padding:16px;margin:12px 16px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+
+    /* ── BUTTONS ── */
+    .btn{width:100%;padding:14px 18px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn:active{transform:scale(.98);opacity:.9;}
+    .btn-primary{background:var(--primary);color:#fff;}
+    .btn-success{background:var(--success);color:#fff;}
+    .btn-danger{background:var(--danger);color:#fff;}
+    .btn-warning{background:var(--warning);color:#fff;}
+    .btn-outline{background:transparent;color:var(--primary);border:2px solid var(--primary);}
+
+    /* ── FORMS ── */
+    .fg{margin-bottom:14px;}
+    .fl{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:5px;}
+    .fi,.fs,.fta{width:100%;padding:12px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;color:var(--text);background:#fff;outline:none;transition:border-color .2s;}
+    .fi:focus,.fs:focus,.fta:focus{border-color:var(--primary);}
+    .fta{min-height:76px;resize:vertical;}
+
+    /* ── LOCATION BOX ── */
+    .locbox{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--muted);margin-top:7px;word-break:break-all;}
+    .locbox.ok{background:#dcfce7;border-color:#86efac;color:var(--success);}
+
+    /* ── STAT GRID ── */
+    .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;}
+    .scard{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+    .snum{font-size:28px;font-weight:700;color:var(--primary);}
+    .slbl{font-size:11px;color:var(--muted);margin-top:2px;}
+
+    /* ── ACTION GRID ── */
+    .agrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;}
+    .acard{background:#fff;border-radius:12px;padding:18px 10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.07);cursor:pointer;border:2px solid transparent;transition:all .15s;}
+    .acard:active{transform:scale(.97);border-color:var(--primary);}
+    .aicon{font-size:34px;display:block;margin-bottom:7px;}
+    .albl{font-size:13px;font-weight:600;color:var(--text);}
+
+    /* ── BADGES ── */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:500;}
+    .badge-green{background:#dcfce7;color:var(--success);}
+    .badge-yellow{background:#fef3c7;color:var(--warning);}
+    .badge-red{background:#fee2e2;color:var(--danger);}
+    .badge-blue{background:#dbeafe;color:var(--primary);}
+
+    /* ── CHECK-IN BANNER ── */
+    .ci-banner{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;padding:16px;}
+
+    /* ── TRAVEL INDICATOR ── */
+    .trv-bar{background:linear-gradient(135deg,var(--warning),#f59e0b);color:#fff;padding:11px 16px;margin:10px 16px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;}
+
+    /* ── HISTORY ITEMS ── */
+    .hitem{background:#fff;border-radius:10px;padding:11px 13px;margin-bottom:8px;border-left:4px solid var(--primary);}
+    .hitem.visit{border-left-color:#059669;}
+    .hitem.prospect{border-left-color:#7c3aed;}
+    .hitem.travel{border-left-color:#d97706;}
+    .hitem.checkin{border-left-color:#2563eb;}
+
+    /* ── LOADING ── */
+    #loading{display:none;position:fixed;inset:0;background:rgba(255,255,255,.87);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+    #loading.show{display:flex;}
+    .spin{width:38px;height:38px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ── TOAST ── */
+    #toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(18px);background:#1e293b;color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;z-index:500;opacity:0;transition:all .28s;white-space:nowrap;max-width:90vw;text-align:center;}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* ── SETUP / LOGIN ── */
+    #screen-setup{background:#fff;padding:28px;min-height:100vh;}
+    #screen-login{background:linear-gradient(155deg,#1d4ed8 0%,#3b82f6 100%);padding:28px;min-height:100vh;}
+    .lcrd{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:380px;}
+    .gsbtn{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;padding:13px 18px;border:2px solid #dadce0;border-radius:10px;background:#fff;font-size:15px;font-weight:500;color:#3c4043;cursor:pointer;}
+    .gsbtn:hover{background:#f8f9fa;}
+
+    /* ── SECTION TITLE ── */
+    .stitle{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:14px 16px 7px;}
+
+    /* ── DIVIDER ── */
+    .divider{height:1px;background:var(--border);margin:14px 0;}
+
+    /* ── TIMER ── */
+    .timer{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;}
+
+    /* ── ROUTE BADGE ── */
+    .route-info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 12px;font-size:12px;color:#1d4ed8;margin-top:8px;}
+
+    .content{padding:14px 16px;}
+    .mt8{margin-top:8px;}
+    .muted{color:var(--muted);}
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════ LOADING ══════════════════════════════════════ -->
+<div id="loading"><div class="spin"></div><div style="color:var(--muted);font-size:13px">Please wait…</div></div>
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════ SETUP ══════════════════════════════════════ -->
+<div id="screen-setup" class="screen active">
+  <div style="text-align:center;margin-bottom:28px;">
+    <div style="font-size:52px;margin-bottom:10px;">📱</div>
+    <h1 style="font-size:22px;font-weight:700;">SalesTrack Setup</h1>
+    <p style="color:var(--muted);margin-top:6px;font-size:13px;">Connect your Google Sheet to get started</p>
+  </div>
+  <div style="width:100%;max-width:380px;">
+    <div class="fg">
+      <label class="fl">Google OAuth Client ID</label>
+      <input type="text" id="setup-cid" class="fi" placeholder="xxxxxxx.apps.googleusercontent.com" autocomplete="off" autocorrect="off" spellcheck="false">
+      <p style="font-size:11px;color:#94a3b8;margin-top:3px;">Google Cloud Console → Credentials → OAuth 2.0 Client ID</p>
+    </div>
+    <div class="fg">
+      <label class="fl">Google Spreadsheet ID</label>
+      <input type="text" id="setup-sid" class="fi" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" autocomplete="off" autocorrect="off" spellcheck="false">
+      <p style="font-size:11px;color:#94a3b8;margin-top:3px;">From Sheet URL: …/spreadsheets/d/<strong>ID</strong>/edit</p>
+    </div>
+    <button class="btn btn-primary" onclick="saveSetup()">✅ Save &amp; Continue</button>
+    <div style="margin-top:18px;padding:13px;background:#f1f5f9;border-radius:10px;">
+      <p style="font-size:13px;color:#475569;font-weight:600;margin-bottom:7px;">📋 Quick Setup Steps</p>
+      <p style="font-size:12px;color:var(--muted);line-height:1.7;">
+        1. Open <strong>console.cloud.google.com</strong><br>
+        2. Create project → Enable <strong>Google Sheets API</strong><br>
+        3. Create <strong>OAuth 2.0 credentials</strong> (Web App type)<br>
+        4. Add your app URL to authorized JS origins<br>
+        5. Create a Google Sheet, copy its ID<br>
+        6. Share that sheet with all salespeople (Editor)<br><br>
+        See <strong>SETUP_GUIDE.md</strong> for detailed steps with screenshots.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ LOGIN ══════════════════════════════════════ -->
+<div id="screen-login" class="screen">
+  <div style="font-size:60px;margin-bottom:12px;">🧴</div>
+  <div style="font-size:26px;font-weight:700;color:#fff;margin-bottom:6px;">SalesTrack</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.8);margin-bottom:40px;text-align:center;">Sales Activity Journal</div>
+  <div class="lcrd">
+    <p style="text-align:center;color:var(--muted);font-size:13px;margin-bottom:18px;">Sign in to start your daily tracking</p>
+    <button class="gsbtn" onclick="signIn()" id="signin-btn">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+    <p style="text-align:center;margin-top:14px;font-size:11px;color:#94a3b8;">Your data saves directly to your Google Sheet</p>
+  </div>
+  <button onclick="showSetup()" style="background:none;border:none;color:rgba(255,255,255,.65);margin-top:22px;font-size:12px;cursor:pointer;text-decoration:underline;">⚙️ Change Settings</button>
+</div>
+
+<!-- ══════════════════════════════════════ HOME ══════════════════════════════════════ -->
+<div id="screen-home" class="screen">
+  <!-- Check-in banner -->
+  <div class="ci-banner">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+          <img id="uavatar" style="width:26px;height:26px;border-radius:50%;display:none;" />
+          <span id="home-greet" style="font-weight:600;font-size:15px;">Hello!</span>
+        </div>
+        <div id="home-ci-status" style="font-size:12px;opacity:.85;">Not checked in today</div>
+      </div>
+      <div id="home-ci-btn"></div>
+    </div>
+  </div>
+
+  <!-- Travel active bar -->
+  <div class="trv-bar" id="trv-bar" style="display:none;">
+    <div>
+      <div style="font-weight:600;font-size:14px;">🏍️ Travel in Progress</div>
+      <div style="font-size:11px;opacity:.9;" id="trv-timer">00:00:00</div>
+      <div style="font-size:11px;opacity:.85;" id="trv-pts">0 GPS points captured</div>
+    </div>
+    <button class="btn btn-danger" onclick="goTo('travel')" style="width:auto;padding:8px 13px;font-size:13px;">End Travel</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stitle">Today's Activity</div>
+  <div class="sgrid">
+    <div class="scard"><div class="snum" id="s-visits">0</div><div class="slbl">Customer Visits</div></div>
+    <div class="scard"><div class="snum" id="s-prospects">0</div><div class="slbl">New Prospects</div></div>
+    <div class="scard"><div class="snum" id="s-travels">0</div><div class="slbl">Travel Logs</div></div>
+    <div class="scard"><div class="snum" id="s-hours">0h</div><div class="slbl">Hours Worked</div></div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="stitle">Log Activity</div>
+  <div class="agrid">
+    <div class="acard" onclick="goTo('visit')"><span class="aicon">🏪</span><div class="albl">Customer Visit</div></div>
+    <div class="acard" onclick="goTo('prospect')"><span class="aicon">🆕</span><div class="albl">New Prospect</div></div>
+    <div class="acard" onclick="goTo('travel')" id="trv-action">
+      <span class="aicon" id="trv-aicon">🏍️</span>
+      <div class="albl" id="trv-albl">Start Travel</div>
+    </div>
+    <div class="acard" onclick="goTo('history')"><span class="aicon">📋</span><div class="albl">Today's Log</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ CUSTOMER VISIT ══════════════════════════════════════ -->
+<div id="screen-visit" class="screen">
+  <div class="hdr"><button class="back" onclick="goBack()">←</button><h1>🏪 Customer Visit</h1></div>
+  <div class="content">
+    <div class="fg">
+      <label class="fl">Customer / Business Name *</label>
+      <input type="text" id="v-name" class="fi" placeholder="e.g., Toko Makmur Jaya">
+    </div>
+    <div class="fg">
+      <label class="fl">📍 GPS Location (Required)</label>
+      <button class="btn btn-outline" onclick="captureGPS('visit')">📍 Capture My Location Now</button>
+      <div id="v-loc" class="locbox">Location not captured yet</div>
+    </div>
+    <div class="fg">
+      <label class="fl">Visit Duration (minutes)</label>
+      <input type="number" id="v-dur" class="fi" placeholder="e.g., 30" min="1" max="480">
+    </div>
+    <div class="fg">
+      <label class="fl">Outcome</label>
+      <select id="v-out" class="fs">
+        <option value="Order Received">✅ Order Received</option>
+        <option value="Follow Up Needed">🔄 Follow Up Needed</option>
+        <option value="Not Interested">❌ Not Interested</option>
+        <option value="Not Met">⚠️ Customer Not Met</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Notes</label>
+      <textarea id="v-notes" class="fta" placeholder="What was discussed? Any orders? Next steps?"></textarea>
+    </div>
+    <button class="btn btn-success" onclick="saveVisit()">💾 Save Visit</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ NEW PROSPECT ══════════════════════════════════════ -->
+<div id="screen-prospect" class="screen">
+  <div class="hdr"><button class="back" onclick="goBack()">←</button><h1>🆕 New Prospect</h1></div>
+  <div class="content">
+    <div class="fg">
+      <label class="fl">Business Name *</label>
+      <input type="text" id="p-name" class="fi" placeholder="e.g., Toko Sejahtera">
+    </div>
+    <div class="fg">
+      <label class="fl">Contact Person</label>
+      <input type="text" id="p-contact" class="fi" placeholder="Owner / Buyer name">
+    </div>
+    <div class="fg">
+      <label class="fl">Phone Number</label>
+      <input type="tel" id="p-phone" class="fi" placeholder="08xx-xxxx-xxxx">
+    </div>
+    <div class="fg">
+      <label class="fl">📍 GPS Location (Required)</label>
+      <button class="btn btn-outline" onclick="captureGPS('prospect')">📍 Capture My Location Now</button>
+      <div id="p-loc" class="locbox">Location not captured yet</div>
+    </div>
+    <div class="fg">
+      <label class="fl">Interest Level</label>
+      <select id="p-int" class="fs">
+        <option value="Hot">🔥 Hot – Very Interested</option>
+        <option value="Warm">😊 Warm – Somewhat Interested</option>
+        <option value="Cold">❄️ Cold – Not Interested Now</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Notes</label>
+      <textarea id="p-notes" class="fta" placeholder="Products needed? Special requirements?"></textarea>
+    </div>
+    <button class="btn btn-success" onclick="saveProspect()">💾 Save Prospect</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ TRAVEL ══════════════════════════════════════ -->
+<div id="screen-travel" class="screen">
+  <div class="hdr"><button class="back" onclick="goBack()">←</button><h1 id="trv-title">🏍️ Travel Log</h1></div>
+  <div class="content" id="trv-content"></div>
+</div>
+
+<!-- ══════════════════════════════════════ CHECK-IN ══════════════════════════════════════ -->
+<div id="screen-checkin" class="screen">
+  <div class="hdr"><button class="back" onclick="goBack()">←</button><h1 id="ci-title">✅ Check In</h1></div>
+  <div class="content">
+    <div class="card" style="text-align:center;margin:0 0 14px;">
+      <div style="font-size:44px;margin-bottom:7px;" id="ci-icon">✅</div>
+      <div style="font-size:22px;font-weight:700;color:var(--primary);" id="ci-clock"></div>
+      <div style="color:var(--muted);font-size:13px;margin-top:3px;" id="ci-date"></div>
+    </div>
+    <div class="fg">
+      <label class="fl">📍 Your Current Location *</label>
+      <button class="btn btn-outline" onclick="captureGPS('checkin')">📍 Capture My Location</button>
+      <div id="ci-loc" class="locbox">Location not captured yet</div>
+    </div>
+    <div class="fg">
+      <label class="fl">Notes (optional)</label>
+      <input type="text" id="ci-notes" class="fi" placeholder="e.g., Starting from office">
+    </div>
+    <button class="btn btn-primary" id="ci-save-btn" onclick="saveCheckin()">✅ Confirm Check In</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ HISTORY ══════════════════════════════════════ -->
+<div id="screen-history" class="screen">
+  <div class="hdr"><button class="back" onclick="goBack()">←</button><h1>📋 Today's Log</h1></div>
+  <div id="hist-content" class="content"></div>
+</div>
+
+<!-- ══════════════════════════════════════ SETTINGS ══════════════════════════════════════ -->
+<div id="screen-settings" class="screen">
+  <div class="hdr"><h1>⚙️ Settings</h1></div>
+  <div class="content">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img id="savatar" style="width:46px;height:46px;border-radius:50%;display:none;">
+        <div>
+          <div id="s-name" style="font-weight:600;font-size:15px;">Not signed in</div>
+          <div id="s-email" style="color:var(--muted);font-size:12px;"></div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <button class="btn btn-danger" onclick="signOut()">🚪 Sign Out</button>
+    </div>
+    <div class="card">
+      <h3 style="font-weight:600;margin-bottom:11px;font-size:14px;">📊 Google Sheet</h3>
+      <div class="fg">
+        <label class="fl">Spreadsheet ID</label>
+        <input type="text" id="s-sheet-id" class="fi" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <button class="btn btn-primary" onclick="saveSheetId()">💾 Save</button>
+      <div style="margin-top:10px;">
+        <a id="s-sheet-link" href="#" target="_blank" style="color:var(--primary);font-size:13px;">📋 Open Google Sheet →</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="font-weight:600;margin-bottom:10px;font-size:14px;">📡 Route Tracking</h3>
+      <div class="fg">
+        <label class="fl">GPS ping interval during travel</label>
+        <select id="s-interval" class="fs" onchange="saveInterval()">
+          <option value="120000">Every 2 minutes (Recommended)</option>
+          <option value="60000">Every 1 minute (High accuracy)</option>
+          <option value="300000">Every 5 minutes (Battery saver)</option>
+        </select>
+      </div>
+      <p style="font-size:12px;color:var(--muted);line-height:1.6;">GPS breadcrumbs are captured automatically while travel is active. Each point is saved to the Sheet with timestamp.</p>
+    </div>
+    <div class="card">
+      <h3 style="font-weight:600;margin-bottom:10px;font-size:14px;">ℹ️ Sheet Structure</h3>
+      <p style="font-size:12px;color:var(--muted);line-height:1.8;">
+        <strong>Daily_Logs</strong> – check-in/out with GPS<br>
+        <strong>Customer_Visits</strong> – visits with exact lat/lng<br>
+        <strong>New_Prospects</strong> – leads with contact &amp; GPS<br>
+        <strong>Travel_Logs</strong> – routes with full GPS breadcrumbs
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ BOTTOM NAV ══════════════════════════════════════ -->
+<nav class="bnav" id="bnav" style="display:none;">
+  <button class="nbtn active" onclick="navTo('home')" id="nav-home"><span class="ni">🏠</span><span>Home</span></button>
+  <button class="nbtn" onclick="navTo('visit')" id="nav-visit"><span class="ni">🏪</span><span>Visit</span></button>
+  <button class="nbtn" onclick="navTo('prospect')" id="nav-prospect"><span class="ni">🆕</span><span>Prospect</span></button>
+  <button class="nbtn" onclick="navTo('travel')" id="nav-travel"><span class="ni">🏍️</span><span>Travel</span></button>
+  <button class="nbtn" onclick="navTo('settings')" id="nav-settings"><span class="ni">⚙️</span><span>Settings</span></button>
+</nav>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+// ════════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════════
+const SHEETS = { DAILY:'Daily_Logs', VISITS:'Customer_Visits', PROSPECTS:'New_Prospects', TRAVEL:'Travel_Logs' };
+const HEADERS = {
+  Daily_Logs:       ['Date','Salesperson','Email','Type','Time','Latitude','Longitude','Maps Link','Notes','Hours Worked'],
+  Customer_Visits:  ['Date','Salesperson','Email','Customer Name','Visit Time','Duration (min)','Latitude','Longitude','Maps Link','Notes','Outcome'],
+  New_Prospects:    ['Date','Salesperson','Email','Business Name','Contact Person','Phone','Visit Time','Latitude','Longitude','Maps Link','Notes','Interest Level'],
+  Travel_Logs:      ['Date','Salesperson','Email','Purpose','Start Time','Start Lat','Start Lng','Start Maps','End Time','End Lat','End Lng','End Maps','Duration (min)','GPS Route Points','Route Maps Link']
+};
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let accessToken = null;
+let currentUser = null;
+let capturedGPS = {};
+let travelTimerInt = null;
+let routeTrackInt = null;
+let routePoints = [];
+
+let st = {
+  checkedIn: false,
+  ciTime: null, ciLat: null, ciLng: null,
+  travelActive: false,
+  trvStart: null, trvLat: null, trvLng: null, trvPurpose: '',
+  stats: { visits:0, prospects:0, travels:0, hours:0 }
+};
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+function init() {
+  loadState();
+  const cfg = getCfg();
+  if (!cfg.clientId || !cfg.sheetId) { showScreen('setup'); return; }
+  const savedTok = localStorage.getItem('st_token');
+  const savedUsr = localStorage.getItem('st_user');
+  if (savedTok && savedUsr) {
+    const td = JSON.parse(savedTok);
+    if (td.exp > Date.now()) {
+      accessToken = td.tok;
+      currentUser = JSON.parse(savedUsr);
+      onSignedIn(); return;
+    }
+  }
+  showScreen('login');
+}
+
+function getCfg() {
+  const s = localStorage.getItem('st_cfg');
+  return s ? JSON.parse(s) : { clientId:'', sheetId:'' };
+}
+
+function saveSetup() {
+  const cid = document.getElementById('setup-cid').value.trim();
+  const sid = document.getElementById('setup-sid').value.trim();
+  if (!cid || !sid) { toast('Please fill in both fields'); return; }
+  localStorage.setItem('st_cfg', JSON.stringify({ clientId:cid, sheetId:sid }));
+  toast('Settings saved!');
+  showScreen('login');
+}
+
+function showSetup() {
+  const c = getCfg();
+  document.getElementById('setup-cid').value = c.clientId||'';
+  document.getElementById('setup-sid').value = c.sheetId||'';
+  showScreen('setup');
+}
+
+// ════════════════════════════════════════
+// GOOGLE AUTH
+// ════════════════════════════════════════
+function signIn() {
+  const cfg = getCfg();
+  if (!cfg.clientId) { toast('Please configure Client ID first'); showSetup(); return; }
+  const tc = google.accounts.oauth2.initTokenClient({
+    client_id: cfg.clientId,
+    scope: 'https://www.googleapis.com/auth/spreadsheets openid email profile',
+    callback: async (r) => {
+      if (r.error) { toast('Sign-in failed: '+r.error); return; }
+      accessToken = r.access_token;
+      localStorage.setItem('st_token', JSON.stringify({ tok: accessToken, exp: Date.now()+(r.expires_in*1000) }));
+      await fetchUserInfo();
+      onSignedIn();
+    }
+  });
+  tc.requestAccessToken();
+}
+
+async function fetchUserInfo() {
+  try {
+    const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers:{Authorization:'Bearer '+accessToken} });
+    const d = await r.json();
+    currentUser = { name: d.name||d.email, email: d.email, pic: d.picture||'' };
+    localStorage.setItem('st_user', JSON.stringify(currentUser));
+  } catch(e) {
+    currentUser = { name:'Sales Rep', email:'', pic:'' };
+  }
+}
+
+function signOut() {
+  accessToken = null; currentUser = null;
+  localStorage.removeItem('st_token'); localStorage.removeItem('st_user');
+  showScreen('login'); document.getElementById('bnav').style.display='none';
+}
+
+async function onSignedIn() {
+  loading(true);
+  await initSheets();
+  updateHomeUI();
+  loading(false);
+  showScreen('home');
+  document.getElementById('bnav').style.display='flex';
+  if (st.travelActive) { startTrvTimer(); startRouteTracking(); }
+}
+
+// ════════════════════════════════════════
+// SHEETS API
+// ════════════════════════════════════════
+function sid() { return getCfg().sheetId; }
+
+async function api(url, method='GET', body=null) {
+  const opts = { method, headers:{ Authorization:'Bearer '+accessToken } };
+  if (body) { opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(body); }
+  const r = await fetch(url, opts);
+  if (!r.ok) { const e=await r.json(); throw new Error(e.error?.message||r.status); }
+  return r.json();
+}
+
+async function initSheets() {
+  try {
+    const data = await api(`https://sheets.googleapis.com/v4/spreadsheets/${sid()}?fields=sheets.properties.title`);
+    const existing = data.sheets.map(s=>s.properties.title);
+    const toCreate = Object.values(SHEETS).filter(n=>!existing.includes(n));
+    if (toCreate.length) {
+      await api(`https://sheets.googleapis.com/v4/spreadsheets/${sid()}:batchUpdate`,'POST',{
+        requests: toCreate.map(t=>({ addSheet:{ properties:{ title:t } } }))
+      });
+      for (const n of toCreate) await appendRow(n, HEADERS[n]);
+    }
+  } catch(e) { toast('⚠️ Sheet error: '+e.message); }
+}
+
+async function appendRow(sheet, row) {
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${sid()}/values/${encodeURIComponent(sheet)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  return await api(url,'POST',{ values:[row] });
+}
+
+// ════════════════════════════════════════
+// GPS
+// ════════════════════════════════════════
+function captureGPS(ctx) {
+  toast('📍 Getting your location…');
+  if (!navigator.geolocation) { toast('❌ Location not supported'); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude.toFixed(6);
+      const lng = pos.coords.longitude.toFixed(6);
+      const acc = Math.round(pos.coords.accuracy);
+      capturedGPS[ctx] = { lat, lng };
+      const el = document.getElementById(ctx==='checkin'?'ci-loc':ctx==='visit'?'v-loc':'p-loc');
+      if (el) { el.className='locbox ok'; el.innerHTML=`✅ Lat: ${lat}, Lng: ${lng} <br>±${acc}m accuracy · <a href="https://maps.google.com/?q=${lat},${lng}" target="_blank" style="color:#15803d">View on Map</a>`; }
+      toast(`✅ Location captured (±${acc}m accuracy)`);
+    },
+    err => {
+      const m = err.code===1?'❌ Location denied. Enable location in browser settings.':err.code===3?'❌ Timeout. Try again outdoors.':'❌ Location unavailable.';
+      toast(m);
+    },
+    { enableHighAccuracy:true, timeout:15000, maximumAge:0 }
+  );
+}
+
+function mapsLink(lat,lng) { return `https://maps.google.com/?q=${lat},${lng}`; }
+
+function routeMapsLink(pts) {
+  if (pts.length<2) return '';
+  const sample = pts.length<=10 ? pts : pts.filter((_,i)=>i%(Math.ceil(pts.length/10))===0).slice(0,10);
+  const waypoints = sample.map(p=>`${p.lat},${p.lng}`).join('/');
+  return `https://www.google.com/maps/dir/${waypoints}`;
+}
+
+// ════════════════════════════════════════
+// ROUTE TRACKING
+// ════════════════════════════════════════
+function getInterval() { return parseInt(localStorage.getItem('st_interval')||'120000'); }
+
+function startRouteTracking() {
+  stopRouteTracking();
+  routePoints = JSON.parse(localStorage.getItem('st_route')||'[]');
+  routeTrackInt = setInterval(()=>{
+    if (!st.travelActive) { stopRouteTracking(); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        const pt = {
+          lat: pos.coords.latitude.toFixed(5),
+          lng: pos.coords.longitude.toFixed(5),
+          t: new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})
+        };
+        routePoints.push(pt);
+        localStorage.setItem('st_route', JSON.stringify(routePoints));
+        const el = document.getElementById('trv-pts');
+        if (el) el.textContent = routePoints.length+' GPS points captured';
+      },
+      ()=>{}, { enableHighAccuracy:true, timeout:10000 }
+    );
+  }, getInterval());
+}
+
+function stopRouteTracking() {
+  if (routeTrackInt) { clearInterval(routeTrackInt); routeTrackInt=null; }
+}
+
+// ════════════════════════════════════════
+// CHECK-IN / CHECK-OUT
+// ════════════════════════════════════════
+function prepCheckin() {
+  const out = st.checkedIn;
+  document.getElementById('ci-title').textContent = out?'👋 Check Out':'✅ Check In';
+  document.getElementById('ci-icon').textContent = out?'👋':'✅';
+  document.getElementById('ci-save-btn').textContent = out?'👋 Confirm Check Out':'✅ Confirm Check In';
+  document.getElementById('ci-save-btn').className = out?'btn btn-danger':'btn btn-primary';
+  document.getElementById('ci-notes').placeholder = out?'End of day notes…':'e.g., Starting from office';
+  capturedGPS['checkin']=null;
+  document.getElementById('ci-loc').className='locbox';
+  document.getElementById('ci-loc').textContent='Location not captured yet';
+  document.getElementById('ci-notes').value='';
+  updateClock();
+}
+
+function updateClock() {
+  const n=new Date();
+  const ce=document.getElementById('ci-clock'); if(ce) ce.textContent=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  const de=document.getElementById('ci-date'); if(de) de.textContent=n.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+
+async function saveCheckin() {
+  const loc = capturedGPS['checkin'];
+  if (!loc) { toast('⚠️ Please capture your location first'); return; }
+  const notes = document.getElementById('ci-notes').value.trim();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('id-ID');
+  const timeStr = now.toLocaleTimeString('id-ID');
+
+  loading(true);
+  try {
+    if (!st.checkedIn) {
+      // CHECK IN
+      await appendRow(SHEETS.DAILY, [dateStr, currentUser.name, currentUser.email, 'Check-In', timeStr, loc.lat, loc.lng, mapsLink(loc.lat,loc.lng), notes, '']);
+      st.checkedIn=true; st.ciTime=now.toISOString(); st.ciLat=loc.lat; st.ciLng=loc.lng;
+      addHist({ type:'checkin', icon:'✅', title:'Checked In', detail:`${timeStr} — ${loc.lat}, ${loc.lng}`, time:timeStr.slice(0,5) });
+      saveState(); updateHomeUI(); toast('✅ Checked in! Have a great day!');
+    } else {
+      // CHECK OUT
+      const hours = ((now-new Date(st.ciTime))/3600000).toFixed(1);
+      await appendRow(SHEETS.DAILY, [dateStr, currentUser.name, currentUser.email, 'Check-Out', timeStr, loc.lat, loc.lng, mapsLink(loc.lat,loc.lng), notes, hours]);
+      st.checkedIn=false; st.ciTime=null; st.ciLat=null; st.ciLng=null;
+      st.stats.hours = parseFloat(hours);
+      addHist({ type:'checkin', icon:'👋', title:'Checked Out', detail:`${hours}h worked — ${loc.lat}, ${loc.lng}`, time:timeStr.slice(0,5) });
+      saveState(); updateHomeUI(); toast(`👋 Checked out! ${hours} hours worked today.`);
+    }
+    loading(false); goBack();
+  } catch(e) { loading(false); toast('❌ Error: '+e.message); }
+}
+
+// ════════════════════════════════════════
+// CUSTOMER VISIT
+// ════════════════════════════════════════
+function prepVisit() {
+  ['v-name','v-dur','v-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('v-out').value='Order Received';
+  capturedGPS['visit']=null;
+  document.getElementById('v-loc').className='locbox';
+  document.getElementById('v-loc').textContent='Location not captured yet';
+}
+
+async function saveVisit() {
+  const name = document.getElementById('v-name').value.trim();
+  if (!name) { toast('⚠️ Please enter customer name'); return; }
+  const loc = capturedGPS['visit'];
+  if (!loc) { toast('⚠️ Please capture location — GPS is required for visits'); return; }
+  const now = new Date();
+  const row = [
+    now.toLocaleDateString('id-ID'), currentUser.name, currentUser.email,
+    name, now.toLocaleTimeString('id-ID'),
+    document.getElementById('v-dur').value||'',
+    loc.lat, loc.lng, mapsLink(loc.lat,loc.lng),
+    document.getElementById('v-notes').value.trim(),
+    document.getElementById('v-out').value
+  ];
+  loading(true);
+  try {
+    await appendRow(SHEETS.VISITS, row);
+    st.stats.visits++;
+    addHist({ type:'visit', icon:'🏪', title:name, detail:`${document.getElementById('v-out').value} · ${loc.lat}, ${loc.lng}`, time:now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) });
+    saveState(); updateHomeUI(); loading(false);
+    toast('✅ Visit saved for '+name); goTo('home');
+  } catch(e) { loading(false); toast('❌ Error: '+e.message); }
+}
+
+// ════════════════════════════════════════
+// NEW PROSPECT
+// ════════════════════════════════════════
+function prepProspect() {
+  ['p-name','p-contact','p-phone','p-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('p-int').value='Hot';
+  capturedGPS['prospect']=null;
+  document.getElementById('p-loc').className='locbox';
+  document.getElementById('p-loc').textContent='Location not captured yet';
+}
+
+async function saveProspect() {
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) { toast('⚠️ Please enter business name'); return; }
+  const loc = capturedGPS['prospect'];
+  if (!loc) { toast('⚠️ Please capture location — GPS is required'); return; }
+  const now = new Date();
+  const row = [
+    now.toLocaleDateString('id-ID'), currentUser.name, currentUser.email,
+    name, document.getElementById('p-contact').value.trim(),
+    document.getElementById('p-phone').value.trim(),
+    now.toLocaleTimeString('id-ID'),
+    loc.lat, loc.lng, mapsLink(loc.lat,loc.lng),
+    document.getElementById('p-notes').value.trim(),
+    document.getElementById('p-int').value
+  ];
+  loading(true);
+  try {
+    await appendRow(SHEETS.PROSPECTS, row);
+    st.stats.prospects++;
+    addHist({ type:'prospect', icon:'🆕', title:name, detail:`${document.getElementById('p-int').value} lead · ${loc.lat}, ${loc.lng}`, time:now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) });
+    saveState(); updateHomeUI(); loading(false);
+    toast('✅ Prospect saved: '+name); goTo('home');
+  } catch(e) { loading(false); toast('❌ Error: '+e.message); }
+}
+
+// ════════════════════════════════════════
+// TRAVEL
+// ════════════════════════════════════════
+function prepTravel() {
+  const el = document.getElementById('trv-content');
+  if (!st.travelActive) {
+    document.getElementById('trv-title').textContent='🏍️ Start Travel';
+    el.innerHTML=`
+      <div class="card" style="margin:0 0 14px;text-align:center;">
+        <div style="font-size:44px;margin-bottom:7px;">🏍️</div>
+        <div style="font-size:13px;color:var(--muted);">Capture starting point to begin GPS route tracking</div>
+      </div>
+      <div class="route-info">🛰️ GPS breadcrumbs will be captured every ${getInterval()/60000} min while you travel — full route saved to Google Sheet</div>
+      <div class="fg mt8">
+        <label class="fl">Trip Purpose / Area</label>
+        <input type="text" id="trv-purpose" class="fi" placeholder="e.g., Area Kelapa Gading">
+      </div>
+      <div class="fg">
+        <label class="fl">📍 Starting Location *</label>
+        <button class="btn btn-outline" onclick="captureGPS('trv_start')">📍 Capture Starting Point</button>
+        <div id="trv_start-loc" class="locbox">Location not captured yet</div>
+      </div>
+      <button class="btn btn-warning mt8" onclick="startTravel()">🏍️ Start Travel & Route Tracking</button>`;
+    capturedGPS['trv_start']=null;
+  } else {
+    const st2 = new Date(st.trvStart);
+    document.getElementById('trv-title').textContent='🏁 End Travel';
+    el.innerHTML=`
+      <div class="trv-bar" style="margin:0 0 14px;border-radius:12px;">
+        <div>
+          <div style="font-weight:600;">🏍️ Travel in Progress</div>
+          <div style="font-size:11px;opacity:.9;">Started: ${st2.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</div>
+          <div style="font-size:11px;opacity:.9;">Purpose: ${st.trvPurpose}</div>
+        </div>
+        <div class="timer" id="trv-form-timer">00:00</div>
+      </div>
+      <div class="route-info">🛰️ <strong id="trv-route-count">${routePoints.length} GPS points</strong> captured along your route</div>
+      <div class="fg mt8">
+        <label class="fl">📍 End Location *</label>
+        <button class="btn btn-outline" onclick="captureGPS('trv_end')">📍 Capture End Point</button>
+        <div id="trv_end-loc" class="locbox">Location not captured yet</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Notes (optional)</label>
+        <input type="text" id="trv-end-notes" class="fi" placeholder="e.g., Visited 5 stores in north area">
+      </div>
+      <button class="btn btn-danger" onclick="endTravel()">🏁 End Travel & Save Route</button>`;
+    capturedGPS['trv_end']=null;
+    // Override locbox display for end
+    document.getElementById('trv_end-loc').className='locbox';
+    document.getElementById('trv_end-loc').textContent='Location not captured yet';
+    setInterval(()=>{
+      const el2=document.getElementById('trv-form-timer');
+      if(!el2) return;
+      const s=Math.floor((Date.now()-new Date(st.trvStart))/1000);
+      el2.textContent=`${pad(Math.floor(s/3600))}:${pad(Math.floor((s%3600)/60))}:${pad(s%60)}`;
+      const rc=document.getElementById('trv-route-count');
+      if(rc) rc.textContent=routePoints.length+' GPS points';
+    },1000);
+  }
+}
+
+// Patch captureGPS for travel sub-contexts
+const _origCapture = captureGPS;
+function captureGPS(ctx) {
+  if (ctx==='trv_start'||ctx==='trv_end') {
+    toast('📍 Getting your location…');
+    if (!navigator.geolocation) { toast('❌ Location not supported'); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        const lat=pos.coords.latitude.toFixed(6), lng=pos.coords.longitude.toFixed(6), acc=Math.round(pos.coords.accuracy);
+        capturedGPS[ctx]={lat,lng};
+        const el=document.getElementById(ctx+'-loc');
+        if(el){ el.className='locbox ok'; el.innerHTML=`✅ Lat: ${lat}, Lng: ${lng} <br>±${acc}m · <a href="https://maps.google.com/?q=${lat},${lng}" target="_blank" style="color:#15803d">View on Map</a>`; }
+        toast(`✅ Location captured (±${acc}m)`);
+      },
+      err=>{ toast(err.code===1?'❌ Location denied':'❌ Location unavailable'); },
+      {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+    );
+    return;
+  }
+  _origCapture(ctx);
+}
+
+function startTravel() {
+  const loc = capturedGPS['trv_start'];
+  if (!loc) { toast('⚠️ Please capture your starting location'); return; }
+  const purpose = document.getElementById('trv-purpose')?.value.trim()||'Field Visit';
+  st.travelActive=true; st.trvStart=new Date().toISOString();
+  st.trvLat=loc.lat; st.trvLng=loc.lng; st.trvPurpose=purpose;
+  routePoints=[{ lat:loc.lat, lng:loc.lng, t:new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) }];
+  localStorage.setItem('st_route', JSON.stringify(routePoints));
+  saveState(); startTrvTimer(); startRouteTracking(); updateHomeUI();
+  toast('🏍️ Travel started! GPS route tracking active.'); goTo('home');
+}
+
+async function endTravel() {
+  const loc = capturedGPS['trv_end'];
+  if (!loc) { toast('⚠️ Please capture your end location'); return; }
+  const now=new Date(), start=new Date(st.trvStart);
+  const durMin=Math.round((now-start)/60000);
+  // Add final point
+  routePoints.push({ lat:loc.lat, lng:loc.lng, t:now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) });
+  const routeStr = routePoints.map(p=>`${p.lat},${p.lng} @${p.t}`).join(' | ');
+  const routeLink = routeMapsLink(routePoints);
+  const notes = document.getElementById('trv-end-notes')?.value.trim()||'';
+  const row=[
+    now.toLocaleDateString('id-ID'), currentUser.name, currentUser.email,
+    st.trvPurpose, start.toLocaleTimeString('id-ID'), st.trvLat, st.trvLng, mapsLink(st.trvLat,st.trvLng),
+    now.toLocaleTimeString('id-ID'), loc.lat, loc.lng, mapsLink(loc.lat,loc.lng),
+    durMin, routeStr, routeLink
+  ];
+  loading(true);
+  try {
+    await appendRow(SHEETS.TRAVEL, row);
+    addHist({ type:'travel', icon:'🏍️', title:st.trvPurpose, detail:`${durMin} min · ${routePoints.length} GPS points`, time:now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) });
+    st.travelActive=false; st.trvStart=null; st.trvLat=null; st.trvLng=null; st.trvPurpose='';
+    st.stats.travels++; routePoints=[];
+    localStorage.removeItem('st_route');
+    saveState(); stopTrvTimer(); stopRouteTracking(); updateHomeUI(); loading(false);
+    toast(`✅ Travel saved! ${durMin} min, ${row[13].split('|').length} GPS points`); goTo('home');
+  } catch(e) { loading(false); toast('❌ Error: '+e.message); }
+}
+
+function startTrvTimer() {
+  if (travelTimerInt) clearInterval(travelTimerInt);
+  travelTimerInt = setInterval(()=>{
+    const el=document.getElementById('trv-timer');
+    if (!el||!st.travelActive) return;
+    const s=Math.floor((Date.now()-new Date(st.trvStart))/1000);
+    el.textContent=`${pad(Math.floor(s/3600))}:${pad(Math.floor((s%3600)/60))}:${pad(s%60)}`;
+    const pe=document.getElementById('trv-pts');
+    if(pe) pe.textContent=routePoints.length+' GPS points captured';
+  },1000);
+}
+
+function stopTrvTimer() {
+  if (travelTimerInt) { clearInterval(travelTimerInt); travelTimerInt=null; }
+  document.getElementById('trv-bar').style.display='none';
+}
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+// ════════════════════════════════════════
+// HISTORY (local)
+// ════════════════════════════════════════
+function addHist(item) {
+  const k='st_hist_'+new Date().toDateString();
+  const h=JSON.parse(localStorage.getItem(k)||'[]');
+  h.unshift(item);
+  localStorage.setItem(k, JSON.stringify(h.slice(0,60)));
+}
+
+function prepHistory() {
+  const k='st_hist_'+new Date().toDateString();
+  const h=JSON.parse(localStorage.getItem(k)||'[]');
+  const c=document.getElementById('hist-content');
+  if (!h.length) {
+    c.innerHTML='<div style="text-align:center;padding:48px 24px;color:#94a3b8;"><div style="font-size:48px;margin-bottom:10px;">📋</div><div style="font-size:15px;font-weight:600;margin-bottom:6px;">No activities yet today</div><div style="font-size:13px;">Start logging visits and prospects!</div></div>';
+    return;
+  }
+  c.innerHTML=h.map(i=>`
+    <div class="hitem ${i.type}">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div>
+          <span style="font-size:15px;">${i.icon}</span>
+          <strong style="margin-left:5px;font-size:14px;">${i.title}</strong>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">${i.detail}</div>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;white-space:nowrap;margin-left:8px;">${i.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════
+// HOME UI
+// ════════════════════════════════════════
+function updateHomeUI() {
+  if (!currentUser) return;
+  const hr=new Date().getHours();
+  const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  document.getElementById('home-greet').textContent=`${greet}, ${currentUser.name.split(' ')[0]}!`;
+  if (currentUser.pic) { const a=document.getElementById('uavatar'); a.src=currentUser.pic; a.style.display='block'; }
+
+  // Settings
+  document.getElementById('s-name').textContent=currentUser.name;
+  document.getElementById('s-email').textContent=currentUser.email;
+  if (currentUser.pic) { const a=document.getElementById('savatar'); a.src=currentUser.pic; a.style.display='block'; }
+  document.getElementById('s-sheet-id').value=getCfg().sheetId||'';
+  document.getElementById('s-sheet-link').href=`https://docs.google.com/spreadsheets/d/${getCfg().sheetId}`;
+  const intEl=document.getElementById('s-interval'); if(intEl) intEl.value=localStorage.getItem('st_interval')||'120000';
+
+  // Check-in status
+  const cis=document.getElementById('home-ci-status'), cib=document.getElementById('home-ci-btn');
+  if (st.checkedIn) {
+    cis.textContent='✅ Checked in at '+new Date(st.ciTime).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    cib.innerHTML='<button class="btn btn-danger" onclick="goTo(\'checkin\')" style="width:auto;padding:9px 13px;font-size:13px;">👋 Check Out</button>';
+  } else {
+    cis.textContent='Not checked in today';
+    cib.innerHTML='<button class="btn btn-success" onclick="goTo(\'checkin\')" style="width:auto;padding:9px 13px;font-size:13px;">✅ Check In</button>';
+  }
+
+  // Travel
+  const tb=document.getElementById('trv-bar');
+  const tai=document.getElementById('trv-aicon'), tal=document.getElementById('trv-albl');
+  if (st.travelActive) {
+    tb.style.display='flex'; tai.textContent='🏁'; tal.textContent='End Travel';
+  } else {
+    tb.style.display='none'; tai.textContent='🏍️'; tal.textContent='Start Travel';
+  }
+
+  // Stats
+  document.getElementById('s-visits').textContent=st.stats.visits;
+  document.getElementById('s-prospects').textContent=st.stats.prospects;
+  document.getElementById('s-travels').textContent=st.stats.travels;
+  document.getElementById('s-hours').textContent=st.stats.hours>0?st.stats.hours+'h':'0h';
+}
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+function saveState() {
+  const today=new Date().toDateString();
+  localStorage.setItem('st_date', today);
+  localStorage.setItem('st_state', JSON.stringify(st));
+}
+
+function loadState() {
+  const today=new Date().toDateString();
+  const lastDate=localStorage.getItem('st_date');
+  const saved=localStorage.getItem('st_state');
+  if (saved) {
+    const s=JSON.parse(saved);
+    if (lastDate!==today) {
+      s.checkedIn=false; s.travelActive=false; s.stats={visits:0,prospects:0,travels:0,hours:0};
+      localStorage.setItem('st_date',today); localStorage.removeItem('st_route');
+    }
+    st={...st,...s};
+  }
+  if (st.travelActive) routePoints=JSON.parse(localStorage.getItem('st_route')||'[]');
+}
+
+function saveInterval() {
+  localStorage.setItem('st_interval', document.getElementById('s-interval').value);
+  toast('✅ Interval saved');
+}
+
+// ════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════
+let navHistory=['home'];
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s=>{ s.style.display='none'; s.classList.remove('active'); });
+  const t=document.getElementById('screen-'+name);
+  if (t) { t.classList.add('active'); t.style.display='block'; }
+  document.querySelectorAll('.nbtn').forEach(b=>b.classList.remove('active'));
+  const nb=document.getElementById('nav-'+name); if(nb) nb.classList.add('active');
+}
+
+function goTo(screen) {
+  if (screen==='checkin') prepCheckin();
+  if (screen==='visit') prepVisit();
+  if (screen==='prospect') prepProspect();
+  if (screen==='travel') prepTravel();
+  if (screen==='history') prepHistory();
+  navHistory.push(screen);
+  showScreen(screen);
+}
+
+function navTo(screen) {
+  if (screen==='checkin'||screen==='home') {
+    if (screen==='checkin') prepCheckin();
+    navHistory=[screen];
+  } else {
+    goTo(screen); return;
+  }
+  showScreen(screen);
+  document.querySelectorAll('.nbtn').forEach(b=>b.classList.remove('active'));
+  const nb=document.getElementById('nav-'+screen); if(nb) nb.classList.add('active');
+}
+
+function goBack() {
+  navHistory.pop();
+  const prev=navHistory[navHistory.length-1]||'home';
+  showScreen(prev);
+}
+
+// ════════════════════════════════════════
+// UTILITY
+// ════════════════════════════════════════
+function loading(show) { document.getElementById('loading').classList.toggle('show',show); }
+
+let toastT;
+function toast(msg) {
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  if(toastT) clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+function saveSheetId() {
+  const id=document.getElementById('s-sheet-id').value.trim();
+  if(!id) { toast('Please enter a Spreadsheet ID'); return; }
+  const c=getCfg(); c.sheetId=id;
+  localStorage.setItem('st_cfg',JSON.stringify(c));
+  document.getElementById('s-sheet-link').href=`https://docs.google.com/spreadsheets/d/${id}`;
+  toast('✅ Sheet ID saved');
+}
+
+// ════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════
+setInterval(updateClock,1000);
+window.addEventListener('load', init);
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
