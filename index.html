@@ -628,7 +628,8 @@ function captureGPS(ctx) {
   if (!navigator.geolocation) { toast('❌ Location not supported'); return; }
   const displayId = (ctx==='trv_start'||ctx==='trv_end') ? ctx+'-loc' :
                     ctx==='checkin' ? 'ci-loc' :
-                    ctx==='visit' ? 'v-loc' : 'p-loc';
+                    ctx==='visit' ? 'v-loc' :
+                    ctx==='delivery' ? 'delivery-loc' : 'p-loc';
   navigator.geolocation.getCurrentPosition(
     pos => {
       const lat = pos.coords.latitude.toFixed(6);
