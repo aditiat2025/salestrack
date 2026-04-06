@@ -747,6 +747,78 @@ async function saveProspect() {
 }
 
 // ════════════════════════════════════════
+// ════════════════════════════════════════
+// ORDERS
+// ════════════════════════════════════════
+function prepOrder() {
+  document.getElementById('ord-customer').value='';
+  document.getElementById('ord-product').value='';
+  document.getElementById('ord-volume').value='';
+  document.getElementById('ord-source').value='WhatsApp';
+  document.getElementById('ord-notes').value='';
+}
+
+async function saveOrder() {
+  const customer = document.getElementById('ord-customer').value.trim();
+  const product  = document.getElementById('ord-product').value;
+  const volume   = document.getElementById('ord-volume').value.trim();
+  if (!customer) { toast('⚠️ Please enter customer name'); return; }
+  if (!product)  { toast('⚠️ Please select product type'); return; }
+  if (!volume)   { toast('⚠️ Please enter volume in liters'); return; }
+  const now = new Date();
+  const row = [
+    now.toLocaleDateString('id-ID'), currentUser.name, currentUser.email,
+    customer, product, volume,
+    document.getElementById('ord-source').value,
+    now.toLocaleTimeString('id-ID'),
+    document.getElementById('ord-notes').value.trim()
+  ];
+  loading(true);
+  try {
+    await appendRow(SHEETS.ORDERS, row);
+    st.stats.orders++;
+    addHist({ type:'order', icon:'📦', title:customer, detail:product+' · '+volume+'L', time:now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) });
+    saveState(); updateHomeUI(); loading(false);
+    toast('✅ Order saved for '+customer); goTo('home');
+  } catch(e) { loading(false); toast('❌ Error: '+e.message); }
+}
+
+function prepDelivery() {
+  document.getElementById('del-customer').value='';
+  document.getElementById('del-product').value='';
+  document.getElementById('del-volume').value='';
+  document.getElementById('del-notes').value='';
+  capturedGPS['delivery']=null;
+  document.getElementById('delivery-loc').className='locbox';
+  document.getElementById('delivery-loc').textContent='Location not captured yet';
+}
+
+async function saveDelivery() {
+  const customer = document.getElementById('del-customer').value.trim();
+  const product  = document.getElementById('del-product').value;
+  const volume   = document.getElementById('del-volume').value.trim();
+  const loc      = capturedGPS['delivery'];
+  if (!customer) { toast('⚠️ Please enter customer name'); return; }
+  if (!product)  { toast('⚠️ Please select product type'); return; }
+  if (!volume)   { toast('⚠️ Please enter volume in liters'); return; }
+  if (!loc)      { toast('⚠️ Please capture GPS at delivery point'); return; }
+  const now = new Date();
+  const row = [
+    now.toLocaleDateString('id-ID'), currentUser.name, currentUser.email,
+    customer, product, volume,
+    now.toLocaleTimeString('id-ID'),
+    loc.lat, loc.lng, mapsLink(loc.lat,loc.lng),
+    document.getElementById('del-notes').value.trim()
+  ];
+  loading(true);
+  try {
+    await appendRow(SHEETS.DELIVERIES, row);
+    addHist({ type:'delivery', icon:'🚚', title:customer, detail:product+' · '+volume+'L delivered', time:now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) });
+    saveState(); updateHomeUI(); loading(false);
+    toast('✅ Delivery confirmed for '+customer); goTo('home');
+  } catch(e) { loading(false); toast('❌ Error: '+e.message); }
+}
+
 // TRAVEL
 // ════════════════════════════════════════
 function prepTravel() {
